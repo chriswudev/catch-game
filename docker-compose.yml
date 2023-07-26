@@ -1,0 +1,10 @@
+version: '3.9'
+services:
+  database:
+    image: postgres
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=catch_game
+  redis:
+    image: redis
