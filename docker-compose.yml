@@ -2,9 +2,14 @@ version: '3.9'
 services:
   database:
     image: postgres
+    restart: always
+    ports:
+      - 5555:5432
     environment:
-      - POSTGRES_USER=user
+      - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=catch_game
-  redis:
-    image: redis
+    volumes:
+      - my-db:/var/lib/postgresql/data
+volumes:
+  my-db:

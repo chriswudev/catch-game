@@ -1,31 +1,32 @@
-import express from 'express'
-const http = require("http");
-const faye = require("faye");
-const fayeRedis = require("faye-redis");
-import routes from './routes'
+import express from "express";
+import http from "http";
+import socket from "socket.io";
+import cors from 'cors'
+import routes from "./routes";
 
 const app = express();
 const server = http.createServer(app);
 
-// Faye Pub/Sub setup with Redis
-const fayeServer = new faye.NodeAdapter({
-  mount: "/faye",
-  timeout: 45,
+export const io = new socket.Server(server, {
+  cors: {
+    origin: process.env.APP_URL,
+    methods: ['GET', 'POST'],
+  },
 });
 
-fayeServer.attach(server, {
-  extensions: [fayeRedis],
-  ping: 10,
-  interval: 10,
-});
-
-// Add middleware and routes
+app.use(cors());
 app.use(express.json());
 
-// Implement API routes (POST /api/game/start, POST /api/game/end, GET /api/leaderboard, POST /api/leaderboard/subscribe)
 app.use("/api", routes);
 
-// Start server
+io.on("connection", (socket) => {
+  console.log("User connected.");
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected.");
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

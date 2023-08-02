@@ -1,10 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Rubber Duck';
+  src: url(../public/assets/fonts/Rubber-Duck.ttf) format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Rubber Duck', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  width: 100vw;
+  height: 100vh;
+}
+
+div#root {
+  width: 100%;
+  height: 100%;
+  background-image: url(../public/assets/imgs/bg1.png);
+  background-size: cover;
+}
+
+.game-container {
+  width: calc(100vw - 160px);
+  height: calc(100vh - 332px);
+  margin: 80px auto;
+  max-width: 1200px;
+  border-radius: 10px;
+  position: relative;
+}
+
+.bg-img-2 {
+  background-image: url(../public/assets/imgs/bg2.png);
+  background-size: cover;
+}
+
+canvas#backgroundCanvas, canvas#canvas {
+  position: absolute;
+  top: 0;
 }
 
 code {

@@ -1,23 +1,63 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import Game from "../models/game";
 import axios from "axios";
 
 const CatchGame: React.FC = () => {
   const navigate = useNavigate();
-  const [score, setScore] = useState(0);
-  const [time, setTime] = useState(10);
+  const [time, setTime] = useState(60);
+  const [width, setWidth] = useState(1024);
+  const [height, setHeight] = useState(650);
+  const timer = useRef<NodeJS.Timer>();
+  const game = useRef<Game>();
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleCatchItem = (isPositive: boolean) => {
-    setScore((prevScore) => prevScore + (isPositive ? 50 : -100));
+  useEffect(() => {
+    timer.current = setInterval(() => {
+      setTime((prevTime) => {
+        if (prevTime <= 0) {
+          clearInterval(timer.current);
+          if (game.current) {
+            game.current.player.gameOver = true;
+          }
+          return prevTime;
+        } else {
+          return prevTime - 1;
+        }
+      });
+    }, 1000);
+
+    return () => clearInterval(timer.current);
+  }, []);
+
+  const keyDownListener = (e: KeyboardEvent) => {
+    e.preventDefault();
+    if (e.key === "ArrowLeft") {
+      game.current?.player.moveLeft();
+    } else if (e.key === "ArrowRight") {
+      game.current?.player.moveRight();
+    } else if (e.key === "Enter" && game.current?.player.gameOver === true) {
+      game.current?.main();
+      window.clearTimeout(timer.current);
+    }
   };
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTime((prevTime) => prevTime - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
+    if (containerRef.current) {
+      const containerRect = containerRef.current.getBoundingClientRect();
+      if (containerRect && containerRect.width && containerRect.height) {
+        setWidth(containerRect.width);
+        setHeight(containerRect.height);
+        setTimeout(() => {
+          game.current = new Game();
+          game.current.main();
+          window.addEventListener("keydown", keyDownListener);
+        }, 100);
+      }
+    }
+    return () => {
+      window.removeEventListener("keydown", keyDownListener);
+    };
   }, []);
 
   useEffect(() => {
@@ -25,24 +65,27 @@ const CatchGame: React.FC = () => {
       const endGame = () => {
         const name = prompt("Game Over! Enter your name:");
         if (name) {
-          axios.post("/api/game/end", { userId: name, score }).then(() => {
-            navigate("/leaderboard");
-          });
+          axios
+            .post("/api/game", {
+              userId: name,
+              score: game.current?.player.score,
+            })
+            .then((res) => {
+              if (res && res.data && res.data.ranking) {
+                alert(`Your ranking is ${res.data.ranking}`);
+              }
+              navigate("/leaderboard");
+            });
         }
       };
       endGame();
     }
-  }, [time, score, navigate]);
+  }, [time, navigate]);
 
   return (
-    <div>
-      <h1>Catch Game</h1>
-      <p>Time Left: {time} seconds</p>
-      <p>Score: {score}</p>
-      <div>
-        <FaArrowLeft onClick={() => handleCatchItem(false)} />
-        <FaArrowRight onClick={() => handleCatchItem(true)} />
-      </div>
+    <div className="game-container" ref={containerRef}>
+      <canvas id="backgroundCanvas" width={width} height={height}></canvas>
+      <canvas id="canvas" width={width} height={height}></canvas>
     </div>
   );
 };

@@ -16,11 +16,3 @@ model Game {
   score    Int
   createdAt DateTime @default(now())
 }
-
-model Leaderboard {
-  id        Int     @id @default(autoincrement())
-  userId    String
-  score     Int
-  name      String
-  createdAt DateTime @default(now())
-}
